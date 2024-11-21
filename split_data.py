@@ -26,6 +26,10 @@ def main():
     test_data = df_shuffled[train_size:]
     train_data.to_csv(file_train, index=False, header=False)
     test_data.to_csv(file_test, index=False, header=False)
+    print(f"train data : {file_train}")
+    print(f"test data  :  {file_test}")
+    
+
 
 
 if __name__ == "__main__":

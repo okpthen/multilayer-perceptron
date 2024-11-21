@@ -17,8 +17,8 @@ def heUniform(input :int, layer:list):
 def heBiases(layer:list):
     biases = []
     for neurons in layer:
-        biases.append(np.zeros((1, neurons)))
-    biases.append(np.zeros((1, 2)))
+        biases.append(np.zeros((neurons, 1)))
+    biases.append(np.zeros((2, 1)))
     return biases
 
 
