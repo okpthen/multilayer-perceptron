@@ -12,6 +12,8 @@ weights_initializer = 'heUniform'
 weights_initializer_choices = ['heUniform']
 file_train = "dataset/train.csv"
 file_test = "dataset/test.csv"
+file_weights = "dataset/weights.pkl"
+file_biases = "dataset/baiases.pkl"
 
 def parse_args_train():
     parser = argparse.ArgumentParser(description='Machine Learning project\tMultilayer Perceptron')
