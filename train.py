@@ -1,8 +1,10 @@
 from parse_args import parse_args_train, file_weights, file_biases
 from load import load_csv
 from weights_initializer import weights_biases_initialize
+from make_scatter import make_scatter
 import numpy as np
 import pickle
+
 # from pandas as pd
 
 epsilon = 1e-15 # ε（イプシロン）はゼロ割を防ぐために加える小さな値
@@ -14,6 +16,11 @@ def sigmoid(x):
 
 def sigmoid_derivative(x):
     return x * (1 - x)
+
+def make_result_str(epochs, max_epochs, loss, val_loss, train_accuracy, test_accuracy):
+    result_str = f"epoch {epochs + 1}/{max_epochs} - loss: {loss:.4f} - val_loss: {val_loss:.4f}"
+    result_str += f" - accuracy:{train_accuracy:.4f} - val_accuracy: {test_accuracy:.4f}"
+    return result_str
 
 def softmax(x):
     exp_x = np.exp(x - np.max(x, axis=0, keepdims=True))  # オーバーフロー防止
@@ -77,11 +84,16 @@ def update_weights_and_biases(weights, biases, hidden_layers, gradients, batch_a
 def compute_loss_acc(array, label, weighes, biases):
     _, output_node = forward_propagation(array, weighes , biases)
     loss = -np.mean(np.sum(label * np.log(output_node + epsilon), axis=0))
-    # loss = -np.mean(np.sum(label * np.log(output_node + epsilon) + (1 - label) * np.log(1 - output_node + epsilon), axis=0))
     output_node_binary = (output_node == output_node.max(axis=0))
     output_node_binary = output_node_binary.astype(int)
     accuracy = np.mean(output_node_binary == label)
     return loss ,accuracy
+
+def save_data(weights, biases):
+    with open(file_weights, 'wb') as f:
+        pickle.dump(weights, f)
+    with open(file_biases, 'wb') as f:
+        pickle.dump(biases, f)
 
 
 def main():
@@ -97,6 +109,11 @@ def main():
     val_loss = 1
     over_learning_count = 0
 
+    loss_list = []
+    acc_list = []
+    val_loss_list = []
+    val_acc_list = []
+
     for epochs in range(args.epochs):
         train_array , train_label = split_data(df_train)
         for batch_start in range(0, len(train_array), args.batch_size):
@@ -110,9 +127,12 @@ def main():
         loss, train_accuracy = compute_loss_acc(train_array.T, train_label.T, weights, biases)
         pre_loss = val_loss
         val_loss , test_accuracy = compute_loss_acc(test_array, test_label, weights, biases)
-
-        print(f"epoch {epochs + 1}/{args.epochs} - loss: {loss:.4f} - val_loss: {val_loss:.4f} - accuracy:{train_accuracy:.4f} - val_accuracy: {test_accuracy:.4f}")
-        # print(f"epoch {epochs + 1}/{args.epochs} - loss: {loss:.4f} - val_loss: {val_loss:.4f}")
+        result_str = make_result_str(epochs, args.epochs, loss, val_loss, train_accuracy, test_accuracy)
+        loss_list.append(loss)
+        acc_list.append(train_accuracy)
+        val_loss_list.append(val_loss)
+        val_acc_list.append(test_accuracy)
+        print(result_str)
         if (pre_loss < val_loss):
             over_learning_count += 1
             if (over_learning_count == over_learn_epochs):
@@ -122,11 +142,8 @@ def main():
             tmp_weight = weights
             tmp_biase = biases
             over_learning_count = 0
-
-    with open(file_weights, 'wb') as f:
-        pickle.dump(tmp_weight, f)
-    with open(file_biases, 'wb') as f:
-        pickle.dump(tmp_biase, f)
+    save_data(tmp_weight, tmp_biase)
+    make_scatter(loss_list, acc_list, val_loss_list, val_acc_list)
     
 
 

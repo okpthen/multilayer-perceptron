@@ -18,9 +18,7 @@ def main():
         standard =(data - mean)  / std
         std_data[index] = standard
         index += 1
-    # print(std_data)
     df_shuffled = std_data.sample(frac=1).reset_index(drop=True)
-    # print(df_shuffled)
     train_size = int((args.rate[0] / (args.rate[0] + args.rate[1])) * len(df_shuffled))
     train_data = df_shuffled[:train_size]
     test_data = df_shuffled[train_size:]
